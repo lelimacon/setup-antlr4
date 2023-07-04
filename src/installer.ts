@@ -1,6 +1,32 @@
 import * as core from '@actions/core'
-import * as path from 'path'
 import * as tc from '@actions/tool-cache'
+import * as path from 'path'
+import * as fs from 'fs'
+
+export async function checkJavaInstall(): Promise<void> {
+  const javaHome = process.env.JAVA_HOME
+  const javaExec = process.env.JAVA_EXEC
+
+  if (!javaHome) {
+    throw Error(`JAVA_HOME variable was not found`)
+  }
+
+  core.info(`JAVA_HOME variable was found pointing at ${javaHome}`)
+
+  if (javaExec) {
+    core.info(`JAVA_EXEC variable was found pointing at ${javaExec}`)
+    return
+  }
+
+  let javaBin = path.join(javaHome, 'bin', 'java')
+  try {
+    await fs.promises.access(javaBin)
+  } catch (error) {
+    javaBin = `${javaBin}.exe`
+  }
+  core.info(`Exporting JAVA_EXEC variable with path to java binary: ${javaBin}`)
+  core.exportVariable('JAVA_EXEC', javaBin)
+}
 
 export async function getAntlr(
   toolName: 'antlr' | 'antlr4',
