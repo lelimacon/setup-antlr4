@@ -1472,13 +1472,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
 const installer = __importStar(__webpack_require__(749));
-const TOOL_NAME = 'antlr4';
-const VERSION = '4.8';
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             yield installer.checkJavaInstall();
-            yield installer.getAntlr(TOOL_NAME, VERSION);
+            const version = core.getInput('version');
+            yield installer.getAntlr(version, 'Antlr4ToolPath');
         }
         catch (error) {
             if (typeof error === 'string') {
@@ -4888,6 +4887,7 @@ const core = __importStar(__webpack_require__(470));
 const tc = __importStar(__webpack_require__(533));
 const path = __importStar(__webpack_require__(622));
 const fs = __importStar(__webpack_require__(747));
+const LATEST_VERSION = '4.13.0';
 function checkJavaInstall() {
     return __awaiter(this, void 0, void 0, function* () {
         const javaHome = process.env.JAVA_HOME;
@@ -4912,24 +4912,28 @@ function checkJavaInstall() {
     });
 }
 exports.checkJavaInstall = checkJavaInstall;
-function getAntlr(toolName, version, envVar = 'Antlr4ToolPath') {
+function getAntlr(version, envVar) {
     return __awaiter(this, void 0, void 0, function* () {
+        if (version === 'latest')
+            version = LATEST_VERSION;
+        const toolName = 'antlr4';
         let toolPath = tc.find(toolName, version);
         const file = `antlr-${version}-complete.jar`;
-        const downloadPath = `https://www.antlr.org/download/${file}`;
         if (toolPath) {
             core.info(`Tool found in cache ${toolPath}`);
         }
         else {
+            const downloadPath = `https://www.antlr.org/download/${file}`;
             core.info(`Downloading ANTLR ${version} from official site: ${downloadPath}`);
             const antlr4 = yield tc.downloadTool(downloadPath);
             toolPath = yield tc.cacheFile(antlr4, file, toolName, version);
             core.info(`Tool stored in ${toolPath} and added to PATH`);
-            core.info(`It is possible to access it via ${envVar} environment variable`);
         }
         const antlr4ToolPath = path.join(toolPath, file);
+        core.info(`Exporting ${envVar} variable with path to ANTLR jar: ${toolPath}`);
         core.exportVariable(envVar, antlr4ToolPath);
         core.addPath(toolPath);
+        core.info(`Access ANTLR via ${envVar} environment variable`);
     });
 }
 exports.getAntlr = getAntlr;

@@ -2,6 +2,12 @@ name: 'Setup ANTLR 4 tool'
 description: 'GitHub Action to download ANTLR 4 jar tool'
 author: 'Niccolò Maltoni'
 
+inputs:
+  version:
+    description: 'ANTLR version: "latest" (4.13.0) or a specific version. Defaults to "latest"'
+    required: true
+    default: 'latest'
+
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'dist/index.js'
